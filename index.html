@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Class Modules - Select Your Subject</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400;600;800&display=swap">
+<style>
+:root{--bg:#eef2f6;--sf:#fff;--ink:#14213d;--mut:#5b6b82;--ln:#cdd6e2;--ac:#e8a200;--ac2:#0f5fd7;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0e1522;--sf:#172134;--ink:#e8edf5;--mut:#9aa9bf;--ln:#2c3b55;--ac:#ffc233;--ac2:#6fa4ff}}
+:root[data-theme="dark"]{--bg:#0e1522;--sf:#172134;--ink:#e8edf5;--mut:#9aa9bf;--ln:#2c3b55;--ac:#ffc233;--ac2:#6fa4ff}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Schibsted Grotesk",system-ui,Arial,sans-serif;line-height:1.55}
+.wrap{max-width:1040px;margin:0 auto;padding:24px 16px 48px}
+:focus-visible{outline:3px solid var(--ac2);outline-offset:2px}
+.bits{display:flex;gap:6px;margin-bottom:14px}
+.bits i{width:22px;height:22px;border-radius:50%;background:var(--ln)}
+.bits i.on{background:var(--ac);box-shadow:0 0 10px var(--ac)}
+h1{font-size:clamp(2rem,5vw,3rem);font-weight:800;line-height:1.1;margin:0 0 8px}
+.sub{color:var(--mut);max-width:60ch;margin:0 0 22px}
+.tools{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-bottom:20px}
+input[type=search]{flex:1;min-width:220px;padding:11px 14px;border:1.5px solid var(--ln);border-radius:6px;background:var(--sf);color:var(--ink);font:inherit}
+.last{display:none;margin-bottom:20px;padding:12px 16px;background:var(--sf);border:1px solid var(--ln);border-left:4px solid var(--ac);border-radius:0 8px 8px 0}
+.last a{color:var(--ac2);font-weight:600}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px}
+.sj{display:flex;flex-direction:column;gap:8px;background:var(--sf);border:1px solid var(--ln);border-radius:10px;padding:20px;color:var(--ink);text-decoration:none;transition:transform .15s,border-color .15s}
+a.sj:hover{transform:translateY(-3px);border-color:var(--ac)}
+.sj .code{font-size:.8rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--mut)}
+.sj h2{font-size:1.25rem;font-weight:800;line-height:1.25;margin:0}
+.sj p{margin:0;color:var(--mut);font-size:.95rem;flex:1}
+.sj .go{font-weight:600;color:var(--ac2)}
+.sj.soon{opacity:.6;border-style:dashed}
+.sj.soon .go{color:var(--mut)}
+.empty{display:none;color:var(--mut)}
+footer{margin-top:32px;color:var(--mut);font-size:.9rem}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="bits" aria-hidden="true"><i class="on"></i><i class="on"></i><i></i><i class="on"></i></div>
+  <h1>Class Modules</h1>
+  <p class="sub">Select your subject to open its progress module. You will log in with your name, section and password inside the module.</p>
+  <div class="tools"><input type="search" id="q" placeholder="Search subjects" aria-label="Search subjects"></div>
+  <div class="last" id="last">Continue where you left off: <a id="lastLink" href="#"></a></div>
+  <div class="grid" id="grid"></div>
+  <p class="empty" id="empty">No subject matches your search.</p>
+  <footer>Can't find your subject? Ask your instructor.</footer>
+</div>
+<script>
+/* ADD A SUBJECT: copy one line, change the text, and set "href" to that module's file name or link.
+   Leave href empty ("") to show it as "Coming soon". */
+var SUBJECTS=[
+  {code:"ELX 163",name:"Digital Electronics",desc:"Number systems, logic gates, Boolean algebra and combinational circuits.",href:"digital-electronics-account.html"},
+  {code:"ECE Laws",name:"ECE Laws, Ethics and Professional Practice",desc:"Laws, codes of ethics and professional practice for electronics engineers.",href:"ece-laws-ethics-account.html"},
+  {code:"OSH",name:"Basic Occupational Safety and Health",desc:"Workplace hazards, safety standards and health practices.",href:""}
+];
+var KEY="classModules.last",mem=null;
+function getLast(){try{return localStorage.getItem(KEY)}catch(e){return mem}}
+function setLast(v){mem=v;try{localStorage.setItem(KEY,v)}catch(e){}}
+function esc(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;")}
+function render(){
+  var q=document.getElementById("q").value.toLowerCase().trim(),h="",n=0;
+  SUBJECTS.forEach(function(s,i){
+    if(q&&(s.name+" "+s.code+" "+s.desc).toLowerCase().indexOf(q)<0)return;
+    n++;
+    var body='<span class="code">'+esc(s.code)+'</span><h2>'+esc(s.name)+'</h2><p>'+esc(s.desc)+'</p>';
+    h+=s.href
+      ?'<a class="sj" href="'+esc(s.href)+'" data-i="'+i+'">'+body+'<span class="go">Open module &rarr;</span></a>'
+      :'<div class="sj soon">'+body+'<span class="go">Coming soon</span></div>';
+  });
+  document.getElementById("grid").innerHTML=h;
+  document.getElementById("empty").style.display=n?"none":"block";
+}
+document.getElementById("q").addEventListener("input",render);
+document.getElementById("grid").addEventListener("click",function(e){
+  var a=e.target.closest&&e.target.closest("a.sj");if(a)setLast(a.getAttribute("data-i"));
+});
+render();
+var l=getLast(),s=SUBJECTS[parseInt(l,10)];
+if(s&&s.href){
+  var a=document.getElementById("lastLink");a.textContent=s.name;a.href=s.href;
+  document.getElementById("last").style.display="block";
+}
+</script>
+</body>
+</html>
